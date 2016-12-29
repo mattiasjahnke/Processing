@@ -2,7 +2,7 @@
 
 A implementation of "smart rockets" (http://www.blprnt.com/smartrockets/) in Processing.
 
-This projects is heavily inspired by Daniel Shiffman's "Smart Rockets in p5.js".
+This project is heavily inspired by Daniel Shiffman's "Smart Rockets in p5.js".
 
 The algorithm used in this project is explained by Daniel in this video:
 
