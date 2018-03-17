@@ -45,7 +45,7 @@ void setup() {
   canvas.endDraw();
   
   r1 = new Rod(0, 200, 20, PI/2);
-  r2 = new Rod(0, 200, 20, PI/2);
+  r2 = new Rod(0, 200, 10, PI/2);
 }
 
 void draw() {
@@ -79,25 +79,27 @@ void draw() {
   float x2 = x1 + r2.len * sin(r2.angle);
   float y2 = y1 + r2.len * cos(r2.angle);
   
-  // Draw first Rod
-  line(0, 0, x1, y1);
-  fill(0);
-  ellipse(x1, y1, r1.mass, r1.mass);
-  
-  // Draw second Rod
-  line (x1, y1, x2, y2);
-  fill(0);
-  ellipse(x2, y2, r2.mass, r2.mass);
-  
   r1.velocity += r1_accel;
   r2.velocity += r2_accel;
   r1.angle += r1.velocity;
   r2.angle += r2.velocity;
   
+  float intensity = map(abs(r2.velocity), 0.2, 0, 0, 255);
+  
+  // Draw second Rod
+  line (x1, y1, x2, y2);
+  fill(255);
+  ellipse(x2, y2, r2.mass, r2.mass);
+  
+  // Draw first Rod
+  line(0, 0, x1, y1);
+  fill(255);
+  ellipse(x1, y1, r1.mass, r1.mass);
+
   canvas.beginDraw();
   canvas.translate(width/2, height / 3);
-  canvas.strokeWeight(2);
-  canvas.stroke(0);
+  canvas.strokeWeight(map(intensity, 255, 0, 2, 7));
+  canvas.stroke(intensity);
   
   if (frameCount > 1) {
     canvas.line(px2, py2, x2, y2);
