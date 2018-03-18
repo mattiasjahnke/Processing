@@ -12,7 +12,7 @@ int[][] map = {
   {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
   {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
   {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
   {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
   {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
   {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -38,6 +38,8 @@ float fov = 60 * PI / 180;
 //float fovHalf = fov / 2;
 float viewDist;
 
+boolean autoTurn = false; // demo purposes
+
 Player player = new Player();
 
 void setup() {
@@ -50,6 +52,10 @@ void setup() {
   mapHeight = map.length;
   
   println("Map size: " + mapWidth + " x " + mapHeight);
+  
+  if (autoTurn) {
+    player.dir = -1;
+  }
 }
 
 void draw() {
@@ -59,6 +65,27 @@ void draw() {
   
   drawMiniMap();
   
+  fill(255);
+  textSize(14);
+  String[] texts = {
+    "x = " + player.x,
+    "y = " + player.y,
+    "direction = " + player.dir,
+    "speed = " + player.speed,
+    "rotation = " + player.rot
+  };
+  
+  for (int i = 0; i < texts.length; i++) {
+    text(texts[i], miniMapScale * mapWidth + 40, 40 + i * 16);
+  }
+  
+  if (autoTurn) {
+    if (player.rot > -3 && player.dir == 1) {
+      player.dir = -1;
+    } else if (player.rot < -6 && player.dir == -1) {
+      player.dir = 1;
+    }
+  }
 }
 
 void keyPressed() {
@@ -101,23 +128,20 @@ void movePlayer() {
 }
 
 void drawMiniMap() {
-  //noStroke();
-  
   castRays();
   
-  
-  fill(200, 0, 200, 70);
+  fill(200, 200, 100, 80);
   for (int y = 0; y < mapHeight; y++) {
     for (int x = 0; x < mapWidth; x++) {
       int wall = map[y][x];
       if (wall > 0) {
-        rect(x * miniMapScale, y * miniMapScale, miniMapScale, miniMapScale);
+        rect(x * miniMapScale + 20, y * miniMapScale + 20, miniMapScale, miniMapScale);
       }
     }
   }
   
-  fill(0);
-  ellipse(player.x * miniMapScale, player.y * miniMapScale, miniMapScale, miniMapScale);
+  fill(255);
+  ellipse(player.x * miniMapScale + 20, player.y * miniMapScale + 20, miniMapScale, miniMapScale);
 }
 
 void castRays() {
@@ -220,7 +244,7 @@ void castSingleRay(float rayAngle, int stripIdx) {
   
   if (dist > 0) {
     
-    stroke(0, 0, 0, 255*0.2);
+    stroke(255, 255, 255, 255*0.2);
     strokeWeight(0.5);
     drawRay(xHit, yHit);
     
@@ -258,14 +282,16 @@ boolean isBlocking(float x, float y) {
 }
 
 void drawRay(float targetX, float targetY) {
-  line(player.x * miniMapScale, player.y * miniMapScale, targetX * miniMapScale, targetY * miniMapScale);
+  line(player.x * miniMapScale + 20, player.y * miniMapScale + 20, targetX * miniMapScale + 20, targetY * miniMapScale + 20);
 }
 
 void drawSurrounding() {
-  // Draw ceiling and floor
-  
-  fill(#0b81bc);
+  // Ceiling
+  //fill(#0b81bc);
+  fill(0);
   rect(0, 0, width, height / 2);
+  
+  // Floor
   fill(#206602);
   rect(0, height / 2, width, height / 2);
 }

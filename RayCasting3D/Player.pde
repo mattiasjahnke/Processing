@@ -8,12 +8,12 @@ class Player {
   public float rotSpeed;
   
   public Player() {
-    x = 18;
-    y = 5;
+    x = 20;
+    y = 2;
     dir = 0;
-    rot = 0;
+    rot = -5;
     speed = 0;
     moveSpeed = 0.10;
-    rotSpeed = 3 * PI / 180;
+    rotSpeed = 0.5 * PI / 180;
   }
 }
