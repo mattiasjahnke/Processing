@@ -254,6 +254,8 @@ void castSingleRay(float rayAngle, int stripIdx) {
 
   float x = right ? ceil(player.x) : floor(player.x);
   float y = player.y + (x - player.x) * slope;
+  
+  boolean darkTexture = false;
 
   while (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
     int wallX = floor(x + (right ? 0 : -1));
@@ -270,6 +272,8 @@ void castSingleRay(float rayAngle, int stripIdx) {
       if (!right) {
         textureX = 1 - textureX;
       }
+      
+      darkTexture = true;
 
       xHit = x;
       yHit = y;
@@ -305,6 +309,8 @@ void castSingleRay(float rayAngle, int stripIdx) {
         if (up) {
           textureX = 1 - textureX;
         }
+        
+        darkTexture = false;
       }
 
       break;
@@ -333,10 +339,10 @@ void castSingleRay(float rayAngle, int stripIdx) {
     noStroke();
     
     if (renderTexture) {
-      fill(0);
-      rect(stripIdx * stripWidth, top, stripWidth, tHeight);
-      tint(255, map(dist, 0, 32, 255, 0));
-      drawSprite(wallType, stripIdx * stripWidth, top, stripWidth * 2, tHeight, textureX, stripWidth / orgSpriteWidth, false);
+      //fill(0);
+      //rect(stripIdx * stripWidth, top, stripWidth, tHeight);
+      //tint(255, map(dist, 0, 32, 255, 0));
+      drawSprite(wallType, stripIdx * stripWidth, top, stripWidth * 2, tHeight, textureX, stripWidth / orgSpriteWidth, darkTexture);
       noTint();
     } else {
       if (wallType == 1) {
