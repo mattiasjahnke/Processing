@@ -16,11 +16,30 @@
  
  */
 
+class Cell {
+  ArrayList<Integer> reminders = new ArrayList<Integer>();
+  int value = 0;
+  boolean dirty = false;
+  int x;
+  int y;
+  public Cell(int value, int y, int x) {
+    this.value = value;
+    this.y = y;
+    this.x = x;
+  }
+
+  void setValue(int value) {
+    this.value = value;
+    dirty = true;
+    reminders.clear();
+  }
+}
+
 Cell[][] board = new Cell[9][9];
 
 int cellSize;
-
 boolean puzzleSolved = false;
+int startMillis;
 
 void setup() {
   size(550, 550);
@@ -28,7 +47,8 @@ void setup() {
   cellSize = width / 9;
 
   /*
-  int[][] boardLayout = {
+  // EASY
+   int[][] boardLayout = {
    {0, 0, 0, 2, 6, 0, 7, 0, 1}, 
    {6, 8, 0, 0, 7, 0, 0, 9, 0}, 
    {1, 9, 0, 0, 0, 4, 5, 0, 0}, 
@@ -40,38 +60,39 @@ void setup() {
    {7, 0, 3, 0, 1, 8, 0, 0, 0}
    };*/
 
+  // EXPERT (Can't solve)
+  /*int[][] boardLayout = {
+   {2, 0, 0, 0, 0, 0, 0, 9, 0}, 
+   {0, 0, 7, 0, 0, 0, 0, 1, 0}, 
+   {6, 0, 0, 0, 0, 8, 7, 5, 0}, 
+   {0, 7, 3, 0, 5, 1, 0, 0, 0}, 
+   {0, 0, 0, 7, 0, 6, 0, 0, 0}, 
+   {0, 0, 0, 0, 0, 0, 0, 0, 4}, 
+   {4, 0, 0, 0, 2, 0, 5, 0, 0}, 
+   {0, 0, 0, 0, 0, 0, 6, 0, 0}, 
+   {3, 0, 6, 0, 9, 0, 0, 0, 0}
+   };*/
+
+  // HARD (Can't solve)
   int[][] boardLayout = {
-    {0, 0, 0, 2, 0, 4, 8, 1, 0}, 
-    {0, 4, 0, 0, 0, 8, 2, 6, 3}, 
-    {3, 0, 0, 1, 6, 0, 0, 0, 4}, 
-    {1, 0, 0, 0, 4, 0, 5, 8, 0}, 
-    {6, 3, 5, 8, 2, 0, 0, 0, 7}, 
-    {2, 0, 0, 5, 9, 0, 1, 0, 0}, 
-    {9, 1, 0, 7, 0, 0, 0, 4, 0}, 
-    {0, 0, 0, 6, 8, 0, 7, 0, 1}, 
-    {8, 0, 0, 4, 0, 3, 0, 5, 0}
+    {0, 0, 7, 0, 0, 0, 3, 0, 2}, 
+    {2, 0, 0, 0, 0, 5, 0, 1, 0}, 
+    {0, 0, 0, 8, 0, 1, 4, 0, 0}, 
+    {0, 1, 0, 0, 9, 6, 0, 0, 8}, 
+    {7, 6, 0, 0, 0, 0, 0, 4, 9}, 
+    {0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+    {0, 0, 0, 1, 0, 3, 0, 0, 0}, 
+    {8, 0, 1, 0, 6, 0, 0, 0, 0}, 
+    {0, 0, 0, 7, 0, 0, 0, 6, 3}
   };
 
   for (int y = 0; y < 9; y++) {
     for (int x = 0; x < 9; x++) {
-      board[y][x] = new Cell(boardLayout[y][x]);
+      board[y][x] = new Cell(boardLayout[y][x], y, x);
     }
   }
-}
 
-class Cell {
-  ArrayList<Integer> reminders = new ArrayList<Integer>();
-  int value = 0;
-  boolean dirty = false;
-  public Cell(int value) {
-    this.value = value;
-  }
-  
-  void setValue(int value) {
-    this.value = value;
-    dirty = true;
-    reminders.clear();
-  }
+  startMillis = millis();
 }
 
 void draw() {
@@ -81,6 +102,8 @@ void draw() {
 
   if (puzzleSolved) {
     println("Puzzle solved");
+    int totalTime = millis() - startMillis;
+    println("Time: " + totalTime);
     noLoop();
   }
 
@@ -105,6 +128,8 @@ void solveTick() {
   Cell cell = board[s0_y][s0_x];
 
   if (cell.value == 0) {
+
+    //if (cell.reminders.size() != 1) {
     cell.reminders.clear(); // Clear any reminders that's currently in the cell
     markCell(s0_y, s0_x);
 
@@ -114,16 +139,30 @@ void solveTick() {
       markColumn(s0_x);
 
       // Could cell contain value "i"?
-      if (!boxHas(floor(s0_y / 3), floor(s0_x / 3), i) && !rowHas(s0_y, i) && !columnHas(s0_x, i)) {
+      if (cellCouldHave(s0_y, s0_x, i)) {
         cell.reminders.add(i);
       }
     }
+    //}
+
+
+    // TODO: If we have a reminder in the cell that is not present
+    // in any other cell in the box, row or column, we can set the value
 
     // If we only have 1 reminder (only one possible number), set the cell value
     if (cell.reminders.size() == 1) {
       checkDone = true;  // Since we've changed the board - run the "solved?"-logic
 
-      cell.setValue(cell.reminders.get(0));
+      int value = cell.reminders.get(0);
+      cell.setValue(value);
+      /*
+      for (Cell c : getColumnCells(s0_x)) {
+       c.reminders.remove(new Integer(value));
+       }
+       
+       for (Cell c : getRowCells(s0_y)) {
+       c.reminders.remove(new Integer(value));
+       }*/
     }
   }
 
@@ -157,6 +196,83 @@ void solveTick() {
   }
 }
 
+// Returns true if the cell COULD have a certain value without breaking the rules (as the board is now)
+boolean cellCouldHave(int y, int x, int value) {
+
+  // Part 1: No magic - look at the boards current state - only "set values" (no reminders)
+  if (boxHas(floor(y / 3), floor(x / 3), value)) {
+    return false;
+  }
+
+  if (rowHas(y, value)) {
+    return false;
+  }
+
+  if (columnHas(x, value)) {
+    return false;
+  }
+
+  // Part 2: "Magic" - look at the boards current reminders and try to use them to rule out values for cells
+
+  // Horizontal (not working)
+  for (int i = 0; i < 9; i++) {
+    if (floor(i / 3) == floor(x / 3)) { // Skip "same box"
+      continue;
+    }
+
+    if (board[y][i].reminders.contains(value)) {
+      ArrayList<Cell> boxCells = getBoxCells(floor(y / 3), floor(i / 3));
+      boolean isBlocked = true;
+      for (Cell cell : boxCells) {
+        if (cell == board[y][i]) {
+          continue;
+        }
+        if (cell.reminders.contains(value) && cell.y != y) {
+          isBlocked = false;
+        }
+      }
+      if (isBlocked) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+// Returns an ArrayList containing all Cells in a box
+ArrayList<Cell> getBoxCells(int y, int x) {
+  ArrayList<Cell> retVal = new ArrayList<Cell>();
+
+  for (int bY = 0; bY < 3; bY++) {
+    for (int bX = 0; bX < 3; bX++) {
+      retVal.add(board[y * 3 + bY][x * 3 + bX]);
+    }
+  }
+
+  return retVal;
+}
+
+ArrayList<Cell> getColumnCells(int x) {
+  ArrayList<Cell> retVal = new ArrayList<Cell>();
+
+  for (int y = 0; y < 9; y++) {
+    retVal.add(board[y][x]);
+  }
+
+  return retVal;
+}
+
+ArrayList<Cell> getRowCells(int y) {
+  ArrayList<Cell> retVal = new ArrayList<Cell>();
+
+  for (Cell rowCell : board[y]) {
+    retVal.add(rowCell);
+  }
+
+  return retVal;
+}
+
 // Returns true if a box (3x3) contains a certain value
 boolean boxHas(int y, int x, int value) {
   for (int bY = 0; bY < 3; bY++) {
@@ -171,8 +287,8 @@ boolean boxHas(int y, int x, int value) {
 
 // Returns true if a row contains a certain value
 boolean rowHas(int y, int value) {
-  for (Cell row : board[y]) {
-    if (row.value == value) {
+  for (Cell rowCell : board[y]) {
+    if (rowCell.value == value) {
       return true;
     }
   }
